@@ -6,13 +6,13 @@ from rest_framework import generics
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import filters
 import django_filters
-#----
+
+
+#----prepods
 class PrepodSerializer(serializers.ModelSerializer):
     class Meta:
         model = prepod
         fields = "__all__"
-        # fields = []
-
 
 class PrepodViewSet(viewsets.ModelViewSet):
     queryset = prepod.objects.all()
@@ -24,17 +24,21 @@ class PrepodList(generics.ListAPIView):
     filter_backends = [DjangoFilterBackend]
     filterset_fields = ['name']
     
-#----
+#----students
 class StudSerializer(serializers.ModelSerializer):
     class Meta:
         model = stud
         fields = "__all__"
 
-
 class StudViewSet(viewsets.ModelViewSet):
     queryset = stud.objects.all()
     serializer_class = StudSerializer
-    
+
+class StudList(generics.ListAPIView):
+    queryset = stud.objects.all()
+    serializer_class = StudSerializer
+    filter_backends = [DjangoFilterBackend]
+    filterset_fields = ['name']   
     
 #----
 class TeoriaSerializer(serializers.ModelSerializer):
