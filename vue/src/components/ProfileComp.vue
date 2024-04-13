@@ -7,7 +7,7 @@ import Sidebar from "./Sidebar.vue";
 
 <template>
   <div class="container">
-    <Sidebar :userId="$route.params.userId"/>
+    <Sidebar :userId="$route.params.userId" :path="$route.path"/>
     <div class="profile__inner">
       <div class="firstcol">
       </div>

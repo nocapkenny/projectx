@@ -1,6 +1,9 @@
 <script setup>
 import { onMounted, ref } from "vue";
 import axios from "axios";
+import { useRouter } from "vue-router";
+
+const router = useRouter();
 
 const userName = ref("");
 const userEmail = ref("");
@@ -8,11 +11,10 @@ const userPassword = ref("");
 const studentGroup = ref("");
 const isProfessor = ref(false);
 const isStudent = ref(false);
-const Prepod = ref([]);
-const Student = ref([]);
 const userFac = ref("1");
 const error = ref("");
 const facilitiesList = ref([]);
+const toId = ref(0);
 
 const getFac = async () => {
   try {
@@ -46,10 +48,33 @@ const postData = async () => {
     }
   } catch (err) {
     console.log(err);
+  } finally {
+    try {
+      if (isProfessor.value) {
+        const { data } = await axios.get(
+          `/api/Prepode/?mail=${userEmail.value}`
+        );
+        toId.value = data[0].id;
+      }
+      if (isStudent.value) {
+        const { data } = await axios.get(`/api/Stude/?mail=${userEmail.value}`);
+        toId.value = data[0].id;
+      }
+      console.log(toId.value);
+    } catch (err) {
+      console.log(err);
+    } finally {
+      if (isProfessor.value) {
+        router.push(`/profprofile/${toId.value}`);
+      }
+      if (isStudent.value) {
+        router.push(`/studprofile/${toId.value}`);
+      }
+    }
   }
 };
 
-onMounted(() => {
+onMounted(async () => {
   getFac();
 });
 
@@ -84,30 +109,8 @@ const onClickSend = async () => {
     error.value = "Вы не выбрали факультет";
     return;
   }
-
   error.value = "";
-
   postData();
-
-  // if (isProfessor) {
-  //   Prepod.value.push({
-  //     name: userName.value,
-  //     mail: userEmail.value,
-  //     password: userPassword.value,
-  //     type: "Professor",
-  //     faculty: userFac.value,
-  //   });
-
-  // }
-  // if (isStudent) {
-  //   Student.value.push({
-  //     userName: userName.value,
-  //     userEmail: userEmail.value,
-  //     userPassword: userPassword.value,
-  //     type: "Student",
-  //     studentGroup: studentGroup.value,
-  //   });
-  // }
 };
 </script>
 
@@ -175,11 +178,7 @@ const onClickSend = async () => {
       </option>
     </select>
     <!-- попробовать через онбефорроут, запрос по почте, вытаскиваем айди и роутим по айди -->
-    <router-link
-      :to="error == '' ? (isProfessor && !isStudent ? '/profprofile/:userId' : '/studprofile/:userId') : ''"
-    >
-      <button @click="onClickSend" class="registration__btn">Отправить</button>
-    </router-link>
+    <button @click="onClickSend()" class="registration__btn">Отправить</button>
 
     <p class="registration__error">{{ error }}</p>
   </div>

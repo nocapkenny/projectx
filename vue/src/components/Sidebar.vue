@@ -3,13 +3,20 @@ import { onMounted, ref } from "vue";
 import axios from "axios";
 const props = defineProps({
   userId: String,
+  path: String,
 });
 
 const user = ref([]);
 
 const getData = async () => {
-  const { data } = await axios.get(`/api/Prepod/${props.userId}`);
-  user.value = data;
+  if (props.path == `/profprofile/${props.userId}` || props.path == `/makecourse/${props.userId}` || props.path == `/table/${props.userId}`) {
+    const { data } = await axios.get(`/api/Prepod/${props.userId}`);
+    user.value = data;
+  }
+  if (props.path == `/studprofile/${props.userId}` || props.path == `/courses/${props.userId}` || props.path == `/marks/${props.userId}`) {
+    const { data } = await axios.get(`/api/Stud/${props.userId}`);
+    user.value = data;
+  }
 };
 
 onMounted(() => {
@@ -28,12 +35,12 @@ onMounted(() => {
     <router-link
       :to="
         $route.path == `/profprofile/${props.userId}` ||
-        $route.path == `/makecourse` ||
-        $route.path == `/table`
+        $route.path == `/makecourse/${props.userId}` ||
+        $route.path == `/table/${props.userId}`
           ? `/profprofile/${props.userId}`
           : $route.path == `/studprofile/${props.userId}` ||
-              $route.path == `/marks` ||
-              $route.path == `/courses`
+              $route.path == `/marks/${props.userId}` ||
+              $route.path == `/courses/${props.userId}`
             ? `/studprofile/${props.userId}`
             : `/404`
       "
@@ -48,12 +55,12 @@ onMounted(() => {
     <router-link
       v-if="
         $route.path == `/profprofile/${props.userId}` ||
-        $route.path == `/makecourse` ||
-        $route.path == `/table`
+        $route.path == `/makecourse/${props.userId}` ||
+        $route.path == `/table/${props.userId}`
       "
-      to="/table"
+      :to="`/table/${props.userId}`"
       :class="
-        $route.path == '/table'
+        $route.path == `/table/${props.userId}`
           ? 'sidebar__link sidebar__link--active'
           : 'sidebar__link'
       "
@@ -62,12 +69,12 @@ onMounted(() => {
     <router-link
       v-if="
         $route.path == `/profprofile/${props.userId}` ||
-        $route.path == `/makecourse` ||
-        $route.path == `/table`
+        $route.path == `/makecourse/${props.userId}` ||
+        $route.path == `/table/${props.userId}`
       "
-      to="/makecourse"
+      :to="`/makecourse/${props.userId}`"
       :class="
-        $route.path == '/makecourse'
+        $route.path == `/makecourse/${props.userId}`
           ? 'sidebar__link sidebar__link--active'
           : 'sidebar__link'
       "
@@ -76,12 +83,12 @@ onMounted(() => {
     <router-link
       v-if="
         $route.path == `/studprofile/${props.userId}` ||
-        $route.path == `/marks` ||
-        $route.path == `/courses`
+        $route.path == `/marks/${props.userId}` ||
+        $route.path == `/courses/${props.userId}`
       "
-      to="/courses"
+      :to="`/courses/${props.userId}`"
       :class="
-        $route.path == '/courses'
+        $route.path == `/courses/${props.userId}`
           ? 'sidebar__link sidebar__link--active'
           : 'sidebar__link'
       "
@@ -90,12 +97,12 @@ onMounted(() => {
     <router-link
       v-if="
         $route.path == `/studprofile/${props.userId}` ||
-        $route.path == `/marks` ||
-        $route.path == `/courses`
+        $route.path == `/marks/${props.userId}` ||
+        $route.path == `/courses/${props.userId}`
       "
-      to="/marks"
+      :to="`/marks/${props.userId}`"
       :class="
-        $route.path == '/marks'
+        $route.path == `/marks/${props.userId}`
           ? 'sidebar__link sidebar__link--active'
           : 'sidebar__link'
       "

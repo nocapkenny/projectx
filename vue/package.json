@@ -9,6 +9,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@formkit/auto-animate": "^0.8.2",
     "axios": "^1.6.8",
     "prettier": "^3.2.5",
     "sass": "^1.72.0",

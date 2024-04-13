@@ -6,7 +6,7 @@ import Sidebar from "../components/Sidebar.vue";
 <template>
   <Header />
   <div class="container">
-    <Sidebar class="aside" />
+    <Sidebar class="aside" :userId="$route.params.userId" :path="$route.path"/>
     <div class="results">
       <h3 class="results__title">Выберите факультет</h3>
       <div class="results__facs">

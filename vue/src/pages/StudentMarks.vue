@@ -6,7 +6,7 @@ import Header from "../components/Header.vue";
 <template>
   <Header />
   <div class="container">
-    <Sidebar class="aside"/>
+    <Sidebar class="aside" :userId="$route.params.userId" :path="$route.path"/>
     <div class="marks">
       <div class="marks__courses">
         <button class="marks__courses-btn marks__courses-btn--active">

@@ -6,7 +6,7 @@ import Sidebar from "../components/Sidebar.vue";
 <template>
   <Header />
   <div class="container">
-    <Sidebar />
+    <Sidebar :userId="$route.params.userId" :path="$route.path"/>
     <div class="course__inner">
       <div class="firstcol">
         <h3 class="course__title">Выберите группу</h3>
