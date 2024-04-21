@@ -8,24 +8,10 @@ from rest_framework import filters
 import django_filters
 
 
-#----prepods
-class PrepodSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = prepod
-        fields = "__all__"
 
-class PrepodViewSet(viewsets.ModelViewSet):
-    queryset = prepod.objects.all()
-    serializer_class = PrepodSerializer
-
-class PrepodList(generics.ListAPIView):
-    queryset = prepod.objects.all()
-    serializer_class = PrepodSerializer
-    filter_backends = [DjangoFilterBackend]
-    filterset_fields = ['name']
-    
 #----students
 class StudSerializer(serializers.ModelSerializer):
+    prepods = serializers.PrimaryKeyRelatedField(queryset=prepod.objects.all(), many=True)
     class Meta:
         model = stud
         fields = "__all__"
@@ -38,8 +24,28 @@ class StudList(generics.ListAPIView):
     queryset = stud.objects.all()
     serializer_class = StudSerializer
     filter_backends = [DjangoFilterBackend]
-    filterset_fields = ['name']   
+    filterset_fields = ['mail']   
     
+    
+
+#----prepods
+class PrepodSerializer(serializers.ModelSerializer):
+    studs = StudSerializer(many = True, read_only = True)
+    class Meta:
+        model = prepod
+        fields = "__all__"
+
+class PrepodViewSet(viewsets.ModelViewSet):
+    queryset = prepod.objects.all()
+    serializer_class = PrepodSerializer
+
+class PrepodList(generics.ListAPIView):
+    queryset = prepod.objects.all()
+    serializer_class = PrepodSerializer
+    filter_backends = [DjangoFilterBackend]
+    filterset_fields = ['mail']
+    
+
 #----
 class TeoriaSerializer(serializers.ModelSerializer):
     class Meta:
@@ -61,7 +67,8 @@ class FaaSerializer(serializers.ModelSerializer):
 class FaaViewSet(viewsets.ModelViewSet):
     queryset = faa.objects.all()
     serializer_class = FaaSerializer
-    
+
+#----
 # class PrepodList(generics.ListAPIView):
 #     serializer_class = PrepodSerializer
 #     def get_queryset(self):

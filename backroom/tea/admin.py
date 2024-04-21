@@ -26,3 +26,4 @@ class GroupAdmin(admin.ModelAdmin):
 @admin.register(teoria)
 class TeoriaAdmin(admin.ModelAdmin):
     pass
+
