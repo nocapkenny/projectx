@@ -1,152 +1,198 @@
 <script setup>
-import { onMounted, ref } from "vue";
-import axios from "axios";
+
 const props = defineProps({
   userId: String,
   path: String,
 });
 
-const user = ref([]);
 
-const getData = async () => {
-  if (props.path == `/profprofile/${props.userId}` || props.path == `/makecourse/${props.userId}` || props.path == `/table/${props.userId}`) {
-    const { data } = await axios.get(`/api/Prepod/${props.userId}`);
-    user.value = data;
-  }
-  if (props.path == `/studprofile/${props.userId}` || props.path == `/courses/${props.userId}` || props.path == `/marks/${props.userId}`) {
-    const { data } = await axios.get(`/api/Stud/${props.userId}`);
-    user.value = data;
-  }
-};
 
-onMounted(() => {
-  getData();
-});
+
 </script>
 
 <template>
   <div class="sidebar">
-    <div class="sidebar__info">
-      <div class="sidebar__info-pic"></div>
-      <p class="sidebar__info-name">
-        {{ user.name }}
-      </p>
+    <div class="sidebar__inner">
+      <h1 class="sidebar__title">BASH2.0</h1>
+      <router-link
+        :to="
+          $route.path == `/profprofile/${props.userId}` ||
+          $route.path == `/makecourse/${props.userId}` ||
+          $route.path == `/table/${props.userId}`
+            ? `/profprofile/${props.userId}`
+            : $route.path == `/studprofile/${props.userId}` ||
+                $route.path == `/marks/${props.userId}` ||
+                $route.path == `/courses/${props.userId}`
+              ? `/studprofile/${props.userId}`
+              : `/404`
+        "
+        :class="
+          $route.path == `/studprofile/${props.userId}` ||
+          $route.path == `/profprofile/${props.userId}`
+            ? 'sidebar__link sidebar__link--first sidebar__link--active'
+            : 'sidebar__link sidebar__link--first'
+        "
+        >Профиль</router-link
+      >
+      <router-link
+        v-if="
+          $route.path == `/profprofile/${props.userId}` ||
+          $route.path == `/makecourse/${props.userId}` ||
+          $route.path == `/table/${props.userId}`
+        "
+        :to="`/table/${props.userId}`"
+        :class="
+          $route.path == `/table/${props.userId}`
+            ? 'sidebar__link sidebar__link--second sidebar__link--active'
+            : 'sidebar__link sidebar__link--second'
+        "
+        >Зачетная таблица</router-link
+      >
+      <router-link
+        v-if="
+          $route.path == `/profprofile/${props.userId}` ||
+          $route.path == `/makecourse/${props.userId}` ||
+          $route.path == `/table/${props.userId}`
+        "
+        :to="`/makecourse/${props.userId}`"
+        :class="
+          $route.path == `/makecourse/${props.userId}`
+            ? 'sidebar__link sidebar__link--third sidebar__link--active'
+            : 'sidebar__link sidebar__link--third'
+        "
+        >Редактор курса</router-link
+      >
+      <router-link
+        v-if="
+          $route.path == `/studprofile/${props.userId}` ||
+          $route.path == `/marks/${props.userId}` ||
+          $route.path == `/courses/${props.userId}`
+        "
+        :to="`/courses/${props.userId}`"
+        :class="
+          $route.path == `/courses/${props.userId}`
+            ? 'sidebar__link sidebar__link--fourth sidebar__link--active'
+            : 'sidebar__link sidebar__link--fourth'
+        "
+        >Курсы</router-link
+      >
+      <router-link
+        v-if="
+          $route.path == `/studprofile/${props.userId}` ||
+          $route.path == `/marks/${props.userId}` ||
+          $route.path == `/courses/${props.userId}`
+        "
+        :to="`/marks/${props.userId}`"
+        :class="
+          $route.path == `/marks/${props.userId}`
+            ? 'sidebar__link sidebar__link--fifth sidebar__link--active'
+            : 'sidebar__link sidebar__link--fifth'
+        "
+        >Мои оценки</router-link
+      >
     </div>
-    <router-link
-      :to="
-        $route.path == `/profprofile/${props.userId}` ||
-        $route.path == `/makecourse/${props.userId}` ||
-        $route.path == `/table/${props.userId}`
-          ? `/profprofile/${props.userId}`
-          : $route.path == `/studprofile/${props.userId}` ||
-              $route.path == `/marks/${props.userId}` ||
-              $route.path == `/courses/${props.userId}`
-            ? `/studprofile/${props.userId}`
-            : `/404`
-      "
-      :class="
-        $route.path == `/studprofile/${props.userId}` ||
-        $route.path == `/profprofile/${props.userId}`
-          ? 'sidebar__link sidebar__link--active'
-          : 'sidebar__link'
-      "
-      >Профиль</router-link
-    >
-    <router-link
-      v-if="
-        $route.path == `/profprofile/${props.userId}` ||
-        $route.path == `/makecourse/${props.userId}` ||
-        $route.path == `/table/${props.userId}`
-      "
-      :to="`/table/${props.userId}`"
-      :class="
-        $route.path == `/table/${props.userId}`
-          ? 'sidebar__link sidebar__link--active'
-          : 'sidebar__link'
-      "
-      >Зачетная таблица</router-link
-    >
-    <router-link
-      v-if="
-        $route.path == `/profprofile/${props.userId}` ||
-        $route.path == `/makecourse/${props.userId}` ||
-        $route.path == `/table/${props.userId}`
-      "
-      :to="`/makecourse/${props.userId}`"
-      :class="
-        $route.path == `/makecourse/${props.userId}`
-          ? 'sidebar__link sidebar__link--active'
-          : 'sidebar__link'
-      "
-      >Редактор курса</router-link
-    >
-    <router-link
-      v-if="
-        $route.path == `/studprofile/${props.userId}` ||
-        $route.path == `/marks/${props.userId}` ||
-        $route.path == `/courses/${props.userId}`
-      "
-      :to="`/courses/${props.userId}`"
-      :class="
-        $route.path == `/courses/${props.userId}`
-          ? 'sidebar__link sidebar__link--active'
-          : 'sidebar__link'
-      "
-      >Курсы</router-link
-    >
-    <router-link
-      v-if="
-        $route.path == `/studprofile/${props.userId}` ||
-        $route.path == `/marks/${props.userId}` ||
-        $route.path == `/courses/${props.userId}`
-      "
-      :to="`/marks/${props.userId}`"
-      :class="
-        $route.path == `/marks/${props.userId}`
-          ? 'sidebar__link sidebar__link--active'
-          : 'sidebar__link'
-      "
-      >Мои оценки</router-link
-    >
   </div>
 </template>
 
 <style scoped lang="scss">
 .sidebar {
-  margin-top: 70px;
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-  width: 300px;
+  background: linear-gradient(330.44deg, #97cadb 1.3%, #02457a 76.94%);
+  width: 280px;
+  height: 100vh;
   position: fixed;
-  &__info {
-    margin-bottom: 50px;
+  border-top-right-radius: 40px;
+  border-bottom-right-radius: 40px;
+  left: 0;
+  &__inner {
     display: flex;
-    gap: 10px;
-    align-items: center;
+    flex-direction: column;
+    gap: 30px;
+    margin-left: 20px;
+    margin-top: 50px;
   }
-  &__info-pic {
-    width: 100px;
-    height: 100px;
-    border-radius: 100px;
-    background-color: #fff;
-  }
-  &__info-name {
-    font-size: 24px;
-    line-height: 36px;
+  &__title {
+    font-family: "Oswald", sans-serif;
+    font-optical-sizing: auto;
+    font-weight: 700;
+    font-style: normal;
+    font-size: 36px;
+    line-height: 53px;
     color: #fff;
+    margin-bottom: 50px;
   }
   &__link {
-    font-size: 24px;
-    line-height: 47px;
-    color: #fff;
+    font-size: 20px;
+    line-height: 30px;
+    color: rgba(#fff , .7);
+    width: 220px;
+    padding-top: 20px;
+    padding-bottom: 20px;
+    padding-left: 45px;
+    position: relative;
     &--active {
-      color: #000;
-      font-size: 24px;
-      line-height: 47px;
-      background-color: #fff;
-      padding: 10px 40px;
-      border-radius: 50px;
+      color: #fff;
+      border-radius: 10px;
+      background-color: rgba(#fff , .05);
+    }
+    &:hover{
+      color: #fff;
+      border-radius: 10px;
+      background-color: rgba(#fff , .05);
+    }
+    &--first::after{
+      content: "";
+      position: absolute;
+      left: 10px;
+      top: 22px;
+      background-image: url(../assets/user.svg);
+      background-repeat: no-repeat;
+      background-size: cover;
+      width: 24px;
+      height: 24px;
+    }
+    &--second::after{
+      content: "";
+      position: absolute;
+      left: 10px;
+      top: 22px;
+      background-image: url(../assets/tableprof.svg);
+      background-repeat: no-repeat;
+      background-size: cover;
+      width: 24px;
+      height: 24px;
+    }
+    &--third::after{
+      content: "";
+      position: absolute;
+      left: 10px;
+      top: 22px;
+      background-image: url(../assets/makecourse.svg);
+      background-repeat: no-repeat;
+      background-size: cover;
+      width: 24px;
+      height: 24px;
+    }
+    &--fourth::after{
+      content: "";
+      position: absolute;
+      left: 10px;
+      top: 22px;
+      background-image: url(../assets/makecourse.svg);
+      background-repeat: no-repeat;
+      background-size: cover;
+      width: 24px;
+      height: 24px;
+    }
+    &--fifth::after{
+      content: "";
+      position: absolute;
+      left: 10px;
+      top: 22px;
+      background-image: url(../assets/marks.svg);
+      background-repeat: no-repeat;
+      background-size: cover;
+      width: 24px;
+      height: 24px;
     }
   }
 }
