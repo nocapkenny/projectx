@@ -48,5 +48,6 @@ class teoria(models.Model):
     def __str__(self):
         return self.tema
 
-    
-    
+class osenki(models.Model):
+    name = models.CharField(max_length = 1000, null = True)
+    stud

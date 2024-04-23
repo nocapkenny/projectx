@@ -11,11 +11,17 @@ import django_filters
 
 #----students
 class StudSerializer(serializers.ModelSerializer):
-    prepods = serializers.PrimaryKeyRelatedField(queryset=prepod.objects.all(), many=True)
+    
     class Meta:
         model = stud
         fields = "__all__"
 
+class Stud2Serializer(serializers.ModelSerializer):
+    prepods = serializers.PrimaryKeyRelatedField(queryset=prepod.objects.all(), many=True)
+    class Meta:
+        model = stud
+        fields = ["id", "name", "group", "prepods"]
+        
 class StudViewSet(viewsets.ModelViewSet):
     queryset = stud.objects.all()
     serializer_class = StudSerializer
@@ -30,7 +36,7 @@ class StudList(generics.ListAPIView):
 
 #----prepods
 class PrepodSerializer(serializers.ModelSerializer):
-    studs = StudSerializer(many = True, read_only = True)
+    studs = Stud2Serializer(many = True, read_only = True)
     class Meta:
         model = prepod
         fields = "__all__"
