@@ -41,12 +41,11 @@ class teoria(models.Model):
     tema = models.CharField(max_length=1000, null=True)
     prepodID = models.IntegerField(null = True)
     predmet = models.CharField(max_length = 100, null=True)
-    docfile = models.FileField(max_length = 500,null=True)
+    docfile = models.FileField(upload_to="files")
     group = models.CharField(max_length = 1500, null=True)
     type = models.CharField(max_length = 100, null = True)
 
-    def __str__(self):
-        return self.tema
+    
 
 class osenki(models.Model):
     name = models.CharField(max_length = 1000, null = True)

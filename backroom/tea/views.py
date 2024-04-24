@@ -1,13 +1,14 @@
 from django.shortcuts import render
 from tea.models import prepod, stud, faa, group, teoria
-# Create your views here.
 from rest_framework import routers, serializers, viewsets
 from rest_framework import generics
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import filters
 import django_filters
 
-
+from rest_framework.response import Response
+from rest_framework.views import APIView
+from django.http import HttpResponse
 
 #----students
 class StudSerializer(serializers.ModelSerializer):
@@ -62,6 +63,20 @@ class TeoriaSerializer(serializers.ModelSerializer):
 class TeoriaViewSet(viewsets.ModelViewSet):
     queryset = teoria.objects.all()
     serializer_class = TeoriaSerializer
+
+class TeoriaList(generics.ListAPIView):
+    queryset = teoria.objects.all()
+    serializer_class = TeoriaSerializer
+    filter_backends = [DjangoFilterBackend]
+    filterset_fields = ['predmet','group']
+    
+# class DownloadFileFromDBView(APIView):
+#     def get(self, request, tema):
+#         file_obj = teoria.objects.get(tema=tema)
+#         file_content = file_obj.docfile.read()  # Предполагается, что поле file_field хранит содержимое файла
+#         response = HttpResponse(file_content, content_type='application/octet-stream')
+#         response['Content-Disposition'] = 'attachment; filename="{}"'.format(file_obj.tema)
+#         return response
     
 #----
 class FaaSerializer(serializers.ModelSerializer):
@@ -73,6 +88,7 @@ class FaaSerializer(serializers.ModelSerializer):
 class FaaViewSet(viewsets.ModelViewSet):
     queryset = faa.objects.all()
     serializer_class = FaaSerializer
+
 
 #----
 # class PrepodList(generics.ListAPIView):
