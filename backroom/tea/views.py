@@ -5,11 +5,11 @@ from rest_framework import generics
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import filters
 import django_filters
-
+from django.http import FileResponse
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from django.http import HttpResponse
-
+from rest_framework.decorators import action
 #----students
 class StudSerializer(serializers.ModelSerializer):
     
@@ -58,11 +58,12 @@ class TeoriaSerializer(serializers.ModelSerializer):
     class Meta:
         model = teoria
         fields = "__all__"
-
+        
 
 class TeoriaViewSet(viewsets.ModelViewSet):
     queryset = teoria.objects.all()
     serializer_class = TeoriaSerializer
+       
 
 class TeoriaList(generics.ListAPIView):
     queryset = teoria.objects.all()
@@ -70,14 +71,28 @@ class TeoriaList(generics.ListAPIView):
     filter_backends = [DjangoFilterBackend]
     filterset_fields = ['predmet','group']
     
-# class DownloadFileFromDBView(APIView):
-#     def get(self, request, tema):
-#         file_obj = teoria.objects.get(tema=tema)
-#         file_content = file_obj.docfile.read()  # Предполагается, что поле file_field хранит содержимое файла
-#         response = HttpResponse(file_content, content_type='application/octet-stream')
-#         response['Content-Disposition'] = 'attachment; filename="{}"'.format(file_obj.tema)
-#         return response
-    
+class FileDownloadView(APIView):
+    serializer_class = TeoriaSerializer
+    def get(self, request, pk):
+        file_model = teoria.objects.get(pk=pk)
+        serializer = self.serializer_class(file_model)
+        response = FileResponse(file_model.docfile.read(), as_attachment=True)
+        response['Content-Disposition'] = 'attachment; filename="{}"'.format(file_model.docfile.name)
+
+        return response
+
+class FileDownload1View(APIView):
+    serializer_class = TeoriaSerializer
+
+    def get(self, request, filename):
+        file_model = teoria.objects.get(file__name=filename)
+        serializer = self.serializer_class(file_model)
+
+        # Подготовка ответа для загрузки
+        response = FileResponse(file_model.docfile.read(), as_attachment=True)
+        response['Content-Disposition'] = 'attachment; filename="{}"'.format(file_model.docfile.name)
+
+        return response
 #----
 class FaaSerializer(serializers.ModelSerializer):
     class Meta:
