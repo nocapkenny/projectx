@@ -51,6 +51,7 @@ onMounted(() => {
           <div class="info">
             <p class="info__name">{{ user.name }}</p>
             <p class="info__mail">Email: {{ user.mail }}</p>
+            <p v-if="$route.path == `/studprofile/${$route.params.userId}`" class="info__group">Группа: {{ user.group }}</p>
             <p class="info__type">
               Тип:
               {{
@@ -112,11 +113,13 @@ onMounted(() => {
   margin-bottom: 51px;
 }
 .info__mail,
-.info__type{
+.info__type,
+.info__group{
   font-size: 20px;
   line-height: 30px;
 }
-.info__mail{
+.info__mail,
+.info__group{
   margin-bottom: 10px;
 }
 .text{

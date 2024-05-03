@@ -3,6 +3,7 @@ import { createRouter, createWebHistory } from 'vue-router'
 import { autoAnimatePlugin } from '@formkit/auto-animate/vue'
 import { createApp } from 'vue'
 import App from './App.vue'
+import VueAwesomePaginate from "vue-awesome-paginate";
  
 import Registration from './pages/Registration.vue'
 import Profile from './pages/Profile.vue'
@@ -10,7 +11,9 @@ import ProfessorTable from './pages/ProfessorTable.vue'
 import ProfessorCourse from './pages/ProfessorCourse.vue'
 import StudentCourse from './pages/StudentCourse.vue'
 import StudentMarks from './pages/StudentMarks.vue'
-import NotFound from './pages/NotFound.vue'
+
+
+import "vue-awesome-paginate/dist/style.css";
 
 const app = createApp(App)
 
@@ -29,6 +32,8 @@ const router = createRouter({
   routes
 })
 
-app.use(autoAnimatePlugin)
 app.use(router)
+app.use(autoAnimatePlugin)
+app.use(VueAwesomePaginate)
 app.mount('#app')
+

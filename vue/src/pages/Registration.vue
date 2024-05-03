@@ -38,6 +38,7 @@ const postData = async () => {
     password: userPassword.value,
     type: "Student",
     group: studentGroup.value,
+
   };
   try {
     if (isProfessor.value) {
@@ -268,6 +269,7 @@ const onClickSend = async () => {
     border: none;
     border-radius: 10px;
     font-size: 20px;
+    color: #000;
     line-height: 30px;
     padding: 10px 0;
     width: 46%;

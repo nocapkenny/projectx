@@ -1,5 +1,96 @@
 <script setup>
+import { onMounted, ref } from "vue";
+import axios from "axios";
 import Sidebar from "../components/Sidebar.vue";
+const file = ref(null);
+const isUpload = ref(false);
+const isLecture = ref(false);
+const isPractice = ref(false);
+const error = ref("");
+const lesson = ref("");
+const topic = ref("");
+const group = ref();
+
+import { useRoute } from "vue-router";
+
+const router = useRoute();
+
+const postFile = async () => {
+  let formData = new FormData();
+  formData.append("file", file.value);
+  formData.append("prepodID", router.params.userId);
+  formData.append("predmet", lesson.value);
+  formData.append("tema", topic.value);
+  formData.append("group", group.value);
+  if(isLecture.value){
+    formData.append("type", 'Lecture');
+  }
+  if(isPractice.value){
+    formData.append("type", 'Practice');
+  }
+  await axios
+    .post("/api/Teoria/", formData, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    })
+    .then(() => {
+      onClickDelete();
+    })
+    .catch((err) => {
+      console.log(err);
+    });
+};
+
+const onClickDelete = () => {
+  file.value = null
+  isLecture.value = false
+  isPractice.value = false
+  isUpload.value = false
+  error.value = ''
+}
+
+const onClickPost = () => {
+  if (file.value == null) {
+    error.value = "Вы не выбрали файл";
+    return;
+  } else if (!isLecture.value && !isPractice.value) {
+    error.value = "Вы не выбрали тип файла";
+    return;
+  } else if (lesson.value == '') {
+    error.value = "Вы не ввели название курса";
+    return;
+  } else if (topic.value == '') {
+    error.value = "Вы не ввели название темы";
+    return;
+  } else if (!group.value) {
+    error.value = "Вы не выбрали группу"
+    console.log(file.value)
+    return
+  }
+
+  error.value = "";
+
+  postFile();
+};
+
+const selectFile = (event) => {
+  file.value = event.target.files[0];
+  if (file.value) {
+    isUpload.value = true;
+  }
+};
+const onClickLecture = () => {
+  isLecture.value = true;
+  isPractice.value = false;
+};
+const onClickPractice = () => {
+  isPractice.value = true;
+  isLecture.value = false;
+};
+const onClickGroup = (event) => {
+  group.value = event.target.value
+}
 </script>
 
 <template>
@@ -89,44 +180,48 @@ import Sidebar from "../components/Sidebar.vue";
           <p class="groups__title title">Выберите группу</p>
           <ul class="groups__list">
             <li class="groups__list-item">
-              <label>
+              <label @click="onClickGroup" >
                 <input
                   type="radio"
                   name="group-course"
                   class="groups__item-radio--real"
+                  value="ФИТ-12-23"
                 />
                 <span class="groups__item-radio--custom"></span>
                 <p class="groups__item-text">ФИТ-12-23</p>
               </label>
             </li>
             <li class="groups__list-item">
-              <label>
+              <label @click="onClickGroup">
                 <input
                   type="radio"
                   name="group-course"
                   class="groups__item-radio--real"
+                  value="ПМИ-12-23"
                 />
                 <span class="groups__item-radio--custom"></span>
                 <p class="groups__item-text">ПМИ-12-23</p>
               </label>
             </li>
             <li class="groups__list-item">
-              <label>
+              <label @click="onClickGroup">
                 <input
                   type="radio"
                   name="group-course"
                   class="groups__item-radio--real"
+                  value="ПМИ-34-23"
                 />
                 <span class="groups__item-radio--custom"></span>
                 <p class="groups__item-text">ПМИ-34-23</p>
               </label>
             </li>
             <li class="groups__list-item">
-              <label>
+              <label @click="onClickGroup">
                 <input
                   type="radio"
                   name="group-course"
                   class="groups__item-radio--real"
+                  value="ИТХ-12-23"
                 />
                 <span class="groups__item-radio--custom"></span>
                 <p class="groups__item-text">ИТХ-12-23</p>
@@ -143,7 +238,7 @@ import Sidebar from "../components/Sidebar.vue";
       <div class="files">
         <div class="files__upload">
           <label class="upload__label">
-            <input type="file" class="upload__input" />
+            <input type="file" class="upload__input" @change="selectFile" />
             <span class="upload__span">
               <svg
                 width="100"
@@ -176,8 +271,8 @@ import Sidebar from "../components/Sidebar.vue";
               </svg>
             </span>
           </label>
-          <div class="upload__selectors">
-            <label>
+          <div v-if="isUpload" class="upload__selectors">
+            <label @change="onClickLecture">
               <input
                 type="radio"
                 name="filetype"
@@ -186,7 +281,7 @@ import Sidebar from "../components/Sidebar.vue";
               <span class="upload__selectors-radio--custom"></span>
               <p class="upload__selectors-text">Лекция</p>
             </label>
-            <label>
+            <label @change="onClickPractice">
               <input
                 type="radio"
                 name="filetype"
@@ -196,8 +291,6 @@ import Sidebar from "../components/Sidebar.vue";
               <p class="upload__selectors-text">Задание</p>
             </label>
           </div>
-          <button class="upload__btn">Добавить файл</button>
-          
         </div>
         <div class="files__editor">
           <p class="editor__title title">Редактор задания</p>
@@ -206,10 +299,16 @@ import Sidebar from "../components/Sidebar.vue";
               placeholder="Название курса"
               type="text"
               class="editor__input"
+              v-model="lesson"
             />
-            <input placeholder="Тема" type="text" class="editor__input" />
+            <input
+              placeholder="Тема"
+              type="text"
+              class="editor__input"
+              v-model="topic"
+            />
             <div class="editor__files">
-              <div class="editor__file">
+              <div v-if="isLecture" class="editor__file">
                 <svg
                   width="40"
                   height="40"
@@ -232,10 +331,12 @@ import Sidebar from "../components/Sidebar.vue";
                     stroke-linejoin="round"
                   />
                 </svg>
-                <p class="editor__file-name">Лекция</p>
-                <a href="#" class="editor__file-delete">Удалить</a>
+                <p class="editor__file-name"> Лекция: {{ file.name }}</p>
+                <p @click="onClickDelete" class="editor__file-delete">
+                  Удалить
+                </p>
               </div>
-              <div class="editor__file">
+              <div v-if="isPractice" class="editor__file">
                 <svg
                   width="40"
                   height="40"
@@ -258,11 +359,14 @@ import Sidebar from "../components/Sidebar.vue";
                     stroke-linejoin="round"
                   />
                 </svg>
-                <p class="editor__file-name">Лекция</p>
-                <a href="#" class="editor__file-delete">Удалить</a>
+                <p class="editor__file-name"> Практика: {{ file.name }}</p>
+                <p @click="onClickDelete" class="editor__file-delete">
+                  Удалить
+                </p>
               </div>
             </div>
-            <button class="editor__btn">Отправить</button>
+            <button @click="onClickPost" class="editor__btn">Отправить</button>
+            <p class="editor__error">{{ error }}</p>
           </div>
         </div>
       </div>
@@ -271,6 +375,15 @@ import Sidebar from "../components/Sidebar.vue";
 </template>
 
 <style scoped lang="scss">
+
+.editor__error {
+  color: rgb(236, 83, 83);
+  text-align: center;
+  margin-top: 2%;
+}
+.upload__filename {
+  margin-bottom: 10px;
+}
 .aside {
   top: 0;
 }
@@ -522,6 +635,8 @@ import Sidebar from "../components/Sidebar.vue";
     font-family: "Poppins", sans-serif;
     font-weight: 400;
     font-style: normal;
+    font-size: 20px;
+    line-height: 30px;
     &::placeholder {
       color: rgba(#000, 0.2);
       font-size: 20px;
@@ -548,10 +663,10 @@ import Sidebar from "../components/Sidebar.vue";
     font-size: 14px;
     line-height: 21px;
     color: #02457a;
+    cursor: pointer;
   }
   &__btn {
     margin-right: 24px;
-    
   }
 }
 .files__upload {
@@ -579,15 +694,15 @@ input[type="file"] {
     margin-left: 24px;
     margin-bottom: 20px;
   }
-  &__selectors{
-    margin-bottom: 50px;
+  &__selectors {
+    margin-bottom: 20px;
     display: flex;
     gap: 30px;
-    & label{
+    & label {
       display: flex;
       align-items: center;
     }
-    & p{
+    & p {
       margin-left: 5px;
     }
   }
@@ -620,7 +735,8 @@ input[type="file"] {
   margin-top: 1px;
   transition: 0.2s ease-in;
 }
-.upload__selectors-radio--real:checked + .upload__selectors-radio--custom::before {
+.upload__selectors-radio--real:checked
+  + .upload__selectors-radio--custom::before {
   transform: translate(-50%, -50%) scale(1);
 }
 .upload__selectors-radio--real:checked + .upload__selectors-radio--custom {
