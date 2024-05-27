@@ -1,15 +1,67 @@
 <script setup>
 import { onMounted, ref } from "vue";
-const file = ref(null);
+import axios from "axios";
 const props = defineProps({
   topic: String,
   type: String,
   id: Number,
 });
+const token = localStorage.getItem("token");
 
-onMounted(() => {
-  console.log(props.id);
-});
+// const download = async () => {
+//   await axios({
+//     url: `files/${props.id}/dw/`,
+//     method: "GET",
+//     responseType:'blob', // указываем тип ответа как binary
+//   }).then((response) => {
+//     const url = window.URL.createObjectURL(
+//       new Blob([response.data], { type: "application/octet-stream" })
+//     );
+//     const link = document.createElement("a");
+//     link.href = url;
+//     link.setAttribute("download", "filename.pdf"); // указываем имя файла
+//     document.body.appendChild(link);
+//     link.click();
+//     console.log(response.status);
+//   });
+// };
+// const download = async () => {
+//   const fileId = "your_file_id_here"; // Замените на реальный ID файла
+//   const url = `/files/${fileId}/dw`; // Убедитесь, что этот URL соответствует вашему маршруту на сервере
+
+//   try {
+//     const response = await axios.get(url, {
+//       responseType: "blob", // Важно для обработки двоичных данных
+//     });
+
+//     // Логирование всех заголовков для отладки
+//     console.log("Response headers:", response.headers);
+
+//     // Создание Blob и URL для скачивания
+//     const blob = new Blob([response.data], { type: response.data.type });
+//     const downloadUrl = window.URL.createObjectURL(blob);
+//     const link = document.createElement("a");
+//     link.href = downloadUrl;
+
+//     // Получение имени файла из заголовка ответа, если это возможно
+//     const contentDisposition = response.headers["content-disposition"];
+//     let fileName = "downloaded_file.doc"; // Замените на ваше расширение файла
+//     if (contentDisposition) {
+//       const fileNameMatch = contentDisposition.match(/filename="(.+)"/);
+//       if (fileNameMatch && fileNameMatch.length === 2)
+//         fileName = fileNameMatch[1];
+//     }
+
+//     link.setAttribute("download", fileName);
+//     document.body.appendChild(link);
+//     link.click();
+//     link.remove();
+//     window.URL.revokeObjectURL(downloadUrl); // Очистка после скачивания
+//   } catch (error) {
+//     console.error("Ошибка при скачивании файла", error);
+//   }
+// };
+
 </script>
 
 <template>
@@ -19,8 +71,9 @@ onMounted(() => {
     </h4>
     <div class="course__files">
       <div v-if="type == 'Lecture'" class="course__file">
-        <a :href="`http://127.0.0.1:8000/files/34/dw`">
+        <a :href="`http://127.0.0.1:8000/files/${props.id}/dw`">
           <svg
+            @click="download"
             width="40"
             height="40"
             viewBox="0 0 40 40"
@@ -48,6 +101,7 @@ onMounted(() => {
       <div v-if="type == 'Practice'" class="course__file">
         <a :href="`http://127.0.0.1:8000/files/${props.id}/dw`">
           <svg
+            @click="download"
             width="40"
             height="40"
             viewBox="0 0 40 40"

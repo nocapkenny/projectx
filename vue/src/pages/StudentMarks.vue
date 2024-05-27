@@ -1,75 +1,77 @@
 <script setup>
 import Sidebar from "@/components/Sidebar.vue";
+import Lessons from "@/components/LessonsStud.vue";
+import axios from "axios";
+import { onMounted, ref } from "vue";
+import { useRoute } from "vue-router";
+const token = localStorage.getItem("token");
+const lessonsId = ref();
+const router = useRoute();
+const lesson = ref();
+const lessonId = ref()
+const marks = ref([])
+const summ = ref(0)
+const kt1 = ref(0)
+const kt2 = ref(0)
+const kt3 = ref(0)
+const kt4 = ref(0)
+
+const getData = async () => {
+  try {
+    const { data } = await axios.get(`/api/User/${router.params.userId}`, {
+      headers: {
+        Authorization: `Token ${token}`,
+      },
+    });
+    lessonsId.value = data.mark_table;
+  } catch (err) {
+    console.log(err);
+  } 
+};
+
+const onClickLesson = (event) => {
+  lesson.value = event.target.value;
+  let sub = lesson.value.split(",")
+  lessonId.value = sub[1]
+  getMarks()
+};
+ 
+const getMarks = async () => {
+  try{
+    const { data } = await axios.get(`/api/Osenki/${lessonId.value}`, {
+      headers:{
+        Authorization: `Token ${token}`
+      }
+    })
+    marks.value = data
+    kt1.value = data.kt1
+    kt2.value = data.kt2
+    kt3.value = data.kt3
+    kt4.value = data.kt4
+    summ.value = kt1.value + kt2.value + kt3.value + kt4.value
+  } catch(err){
+    console.log(err)
+  }
+}
+
+onMounted(() => {
+  getData();
+});
 </script>
 
 <template>
   <div class="container">
     <Sidebar :userId="$route.params.userId" :path="$route.path" />
     <div class="marks__inner">
-      <div class="firstcol">
+      <div class="firstcol marks">
         <h3 class="marks__title">Выберите предмет</h3>
-        <ul class="marks__list">
-          <li class="marks__list-item">
-            <label>
-              <input
-                type="radio"
-                name="lesson-mark"
-                class="marks__item-radio--real"
-              />
-              <span class="marks__item-radio--custom"></span>
-              <p class="marks__item-text">Алгоритмы и структуры данных</p>
-            </label>
-          </li>
-          <li class="marks__list-item">
-            <label>
-              <input
-                type="radio"
-                name="lesson-mark"
-                class="marks__item-radio--real"
-              />
-              <span class="marks__item-radio--custom"></span>
-              <p class="marks__item-text">Алгоритмы и структуры данных</p>
-            </label>
-          </li>
-          <li class="marks__list-item">
-            <label>
-              <input
-                type="radio"
-                name="lesson-mark"
-                class="marks__item-radio--real"
-              />
-              <span class="marks__item-radio--custom"></span>
-              <p class="marks__item-text">Алгоритмы и структуры данных</p>
-            </label>
-          </li>
-          <li class="marks__list-item">
-            <label>
-              <input
-                type="radio"
-                name="lesson-mark"
-                class="marks__item-radio--real"
-              />
-              <span class="marks__item-radio--custom"></span>
-              <p class="marks__item-text">Алгоритмы и структуры данных</p>
-            </label>
-          </li>
-          <li class="marks__list-item">
-            <label>
-              <input
-                type="radio"
-                name="lesson-mark"
-                class="marks__item-radio--real"
-              />
-              <span class="marks__item-radio--custom"></span>
-              <p class="marks__item-text">Алгоритмы и структуры данных</p>
-            </label>
-          </li>
+        <ul v-auto-animate class="marks__list">
+          <Lessons
+            v-for="lessonId in lessonsId"
+            :id="lessonId"
+            :on-click-lesson="onClickLesson"
+          />
         </ul>
-        <div class="marks__paginate">
-          <a href="#" class="marks__page marks__page--active">1</a>
-          <a href="#" class="marks__page">2</a>
-          <a href="#" class="marks__page">3</a>
-        </div>
       </div>
       <div class="secondcol">
         <div class="marks__table">
@@ -91,28 +93,36 @@ import Sidebar from "@/components/Sidebar.vue";
               <p class="marks__table-text">Итог</p>
             </div>
             <div class="marks__table-minpoints">
-              <p class="marks__table-text marks__table-text--secondunderline">13</p>
+              <p class="marks__table-text marks__table-text--secondunderline">
+                13
+              </p>
               <p class="marks__table-text">13</p>
               <p class="marks__table-text">5</p>
               <p class="marks__table-text">17</p>
               <p class="marks__table-text">41</p>
             </div>
-            <div class="marks__table-points">
-              <p class="marks__table-text marks__table-text--thirdunderline">21</p>
-              <p class="marks__table-text">20</p>
-              <p class="marks__table-text">20</p>
-              <p class="marks__table-text">20</p>
-              <p class="marks__table-text">81</p>
+            <div v-auto-animate  class="marks__table-points">
+              <p class="marks__table-text marks__table-text--thirdunderline">
+                {{ kt1 }}
+              </p>
+              <p class="marks__table-text">{{ kt2 }}</p>
+              <p class="marks__table-text">{{ kt3 }}</p>
+              <p class="marks__table-text">{{ kt4 }}</p>
+              <p class="marks__table-text">{{ summ }}</p>
             </div>
             <div class="marks__table-maxpoints">
-              <p class="marks__table-text marks__table-text--fourthunderline">30</p>
+              <p class="marks__table-text marks__table-text--fourthunderline">
+                30
+              </p>
               <p class="marks__table-text">20</p>
               <p class="marks__table-text">10</p>
               <p class="marks__table-text">40</p>
               <p class="marks__table-text">100</p>
             </div>
             <div class="marks__table-date">
-              <p class="marks__table-text marks__table-text--fifthtunderline">01.04.2024</p>
+              <p class="marks__table-text marks__table-text--fifthtunderline">
+                01.04.2024
+              </p>
               <p class="marks__table-text">01.04.2024</p>
               <p class="marks__table-text">01.04.2024</p>
               <p class="marks__table-text">01.04.2024</p>
@@ -126,6 +136,10 @@ import Sidebar from "@/components/Sidebar.vue";
 </template>
 
 <style scoped lang="scss">
+.firstcol.marks {
+  height: auto;
+  padding-bottom: 15px;
+}
 .marks__inner {
   display: flex;
   flex-direction: column;

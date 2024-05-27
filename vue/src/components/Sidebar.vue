@@ -1,4 +1,9 @@
 <script setup>
+import axios from "axios";
+import { useRouter } from "vue-router";
+
+const router = useRouter();
+const token = localStorage.getItem("token");
 
 const props = defineProps({
   userId: String,
@@ -7,7 +12,20 @@ const props = defineProps({
 
 
 
-
+const logout = async () => {
+  try {
+    const { data } = await axios.get("api/logout/", {
+      headers: {
+        Authorization: `Token ${token}`,
+      },
+    });
+  } catch (err) {
+    console.log(err);
+  } finally {
+    localStorage.removeItem("token");
+    router.push("/");
+  }
+};
 </script>
 
 <template>
@@ -90,6 +108,9 @@ const props = defineProps({
         "
         >Мои оценки</router-link
       >
+      <p @click="logout" class="sidebar__logout">Выйти</p>
+      <a href="mailto:zxsage@yandex.ru" class="sidebar__email">Написать нам: zxsage@yandex.ru</a>
+      
     </div>
   </div>
 </template>
@@ -103,6 +124,15 @@ const props = defineProps({
   border-top-right-radius: 40px;
   border-bottom-right-radius: 40px;
   left: 0;
+  &__email{
+    font-size: 14px;
+    line-height: 24px;
+    color: #fff;
+    color: rgba(#fff, 0.7);
+    &:hover {
+      color: #fff;
+    }
+  }
   &__inner {
     display: flex;
     flex-direction: column;
@@ -123,7 +153,7 @@ const props = defineProps({
   &__link {
     font-size: 20px;
     line-height: 30px;
-    color: rgba(#fff , .7);
+    color: rgba(#fff, 0.7);
     width: 220px;
     padding-top: 20px;
     padding-bottom: 20px;
@@ -132,14 +162,14 @@ const props = defineProps({
     &--active {
       color: #fff;
       border-radius: 10px;
-      background-color: rgba(#fff , .05);
+      background-color: rgba(#fff, 0.05);
     }
-    &:hover{
+    &:hover {
       color: #fff;
       border-radius: 10px;
-      background-color: rgba(#fff , .05);
+      background-color: rgba(#fff, 0.05);
     }
-    &--first::after{
+    &--first::after {
       content: "";
       position: absolute;
       left: 10px;
@@ -150,7 +180,7 @@ const props = defineProps({
       width: 24px;
       height: 24px;
     }
-    &--second::after{
+    &--second::after {
       content: "";
       position: absolute;
       left: 10px;
@@ -161,7 +191,7 @@ const props = defineProps({
       width: 24px;
       height: 24px;
     }
-    &--third::after{
+    &--third::after {
       content: "";
       position: absolute;
       left: 10px;
@@ -172,7 +202,7 @@ const props = defineProps({
       width: 24px;
       height: 24px;
     }
-    &--fourth::after{
+    &--fourth::after {
       content: "";
       position: absolute;
       left: 10px;
@@ -183,7 +213,7 @@ const props = defineProps({
       width: 24px;
       height: 24px;
     }
-    &--fifth::after{
+    &--fifth::after {
       content: "";
       position: absolute;
       left: 10px;
@@ -193,6 +223,34 @@ const props = defineProps({
       background-size: cover;
       width: 24px;
       height: 24px;
+    }
+  }
+  &__logout {
+    cursor: pointer;
+    font-size: 20px;
+    line-height: 30px;
+    color: rgba(#fff, 0.7);
+    width: 220px;
+    padding-top: 20px;
+    padding-bottom: 20px;
+    position: relative;
+    padding-left: 45px;
+    &:hover {
+      color: #fff;
+      border-radius: 10px;
+      background-color: rgba(#fff, 0.05);
+    }
+    &::after {
+      content: "";
+      position: absolute;
+      left: 10px;
+      top: 26px;
+      background-image: url(../assets/log-out.svg);
+      transform: rotate(180deg);
+      background-repeat: no-repeat;
+      background-size: cover;
+      width: 20px;
+      height: 20px;
     }
   }
 }

@@ -1,5 +1,6 @@
 <script setup>
 import Sidebar from "@/components/Sidebar.vue";
+import Lessons from "@/components/Lessons.vue";
 import StudCourseFiles from "@/components/StudCourseFiles.vue";
 import axios from "axios";
 import { onMounted, ref, watch, computed } from "vue";
@@ -7,7 +8,6 @@ import { useRoute } from "vue-router";
 
 const router = useRoute();
 const currentPage = ref(1);
-const currentPageLessons = ref(1)
 const perPage = ref(2);
 const file = ref();
 const displayedFiles = ref();
@@ -16,16 +16,48 @@ const stud = ref();
 const topic = ref("");
 const isFetched = ref(false);
 const isPending = ref(false);
+const token = localStorage.getItem("token");
+const user = ref([]);
+const group = ref("");
+const lessonsId = ref(null);
 
-// const onClickHandler = (page) => {
-//   console.log(page);
-// };
+
+const getData = async () => {
+  try {
+    const { data } = await axios.get(`/api/User/${router.params.userId}`, {
+      headers: {
+        Authorization: `Token ${token}`,
+      },
+    });
+    user.value = data;
+    lessonsId.value = data.mark_table;
+  } catch (err) {
+    console.log(err);
+  } finally {
+    getGroup();
+  }
+};
+
+const getGroup = async () => {
+  try {
+    const { data } = await axios.get(`/api/Gro/${user.value.fiGroup}`);
+    group.value = data.name;
+  } catch (err) {
+    console.log(err);
+  } finally {
+  }
+};
 
 const getFiles = async () => {
   try {
     isPending.value = true;
     const { data } = await axios.get(
-      `/api/Teoriae/?predmet=${lesson.value}&group=${stud.value.group}`
+      `/api/Teoriae/?predmet=${lesson.value}&group=${group.value}`,
+      {
+        headers: {
+          Authorization: `Token ${token}`,
+        },
+      }
     );
     file.value = data;
   } catch (err) {
@@ -36,88 +68,45 @@ const getFiles = async () => {
       isFetched.value = true;
     }
     currentPage.value = 1;
-    displayedFiles.value = file.value.slice(0, 2)
+    displayedFiles.value = file.value.slice(0, 2);
   }
 };
-const clickPage = () =>{
+const clickPage = () => {
   let startIndex = currentPage.value * perPage.value - perPage.value;
   let endIndex = startIndex + perPage.value;
   displayedFiles.value = file.value.slice(startIndex, endIndex);
-  console.log(displayedFiles.value)
-}
+};
 
 const onClickLesson = async (event) => {
   lesson.value = event.target.value;
-  try {
-    const { data } = await axios.get(`/api/Stud/${router.params.userId}`);
-    stud.value = data;
-  } catch (err) {
-    console.log(err);
-  } finally {
-    getFiles();
-  }
+  getFiles();
 };
 const clearFiles = () => {
   isFetched.value = false;
 };
 
+
 watch(lesson, clearFiles);
+onMounted(() => {
+  getData();
+});
 </script>
 
 <template>
   <div class="container">
     <Sidebar :userId="$route.params.userId" :path="$route.path" />
-    <div class="course__inner stud">
-      <div class="firstcol">
+    <div v-auto-animate class="course__inner stud">
+      <div class="firstcol student__course">
         <h3 class="course__title stud">Выберите предмет</h3>
-        <ul class="course__list stud">
-          <li class="course__list-item stud">
-            <label @change="onClickLesson">
-              <input
-                type="radio"
-                name="lesson"
-                class="course__item-radio--real stud"
-                value="Языки программирования"
-              />
-              <span class="course__item-radio--custom stud"></span>
-              <p class="course__item-text stud">Языки программирования</p>
-            </label>
-          </li>
-          <li class="course__list-item stud">
-            <label @change="onClickLesson">
-              <input
-                type="radio"
-                name="lesson"
-                class="course__item-radio--real stud"
-                value="Аналитическая геометрия"
-              />
-              <span class="course__item-radio--custom stud"></span>
-              <p class="course__item-text stud">Аналитическая геометрия</p>
-            </label>
-          </li>
-          <li class="course__list-item stud">
-            <label @change="onClickLesson">
-              <input
-                type="radio"
-                name="lesson"
-                class="course__item-radio--real stud"
-                value="Алгоритмы и структуры данных"
-              />
-              <span class="course__item-radio--custom stud"></span>
-              <p class="course__item-text stud">Алгоритмы и структуры данных</p>
-            </label>
-          </li>
+        <ul v-auto-animate class="course__list stud">
+          <Lessons
+            v-for="lessonId in lessonsId"
+            :id="lessonId"
+            :on-click-lesson="onClickLesson"
+          />
         </ul>
-        
-        <vue-awesome-paginate
-          :total-items="12"
-          v-model="currentPageLessons"
-          :items-per-page="4"
-          :max-pages-shown="6"
-          pagination-container-class="course__lessons-list"
-        />
       </div>
-      <div v-if="isFetched" class="secondcol">
+      <div v-auto-animate v-if="isFetched" class="secondcol student__course">
         <StudCourseFiles
           v-for="item in displayedFiles"
           :key="file.tema"
@@ -145,7 +134,15 @@ watch(lesson, clearFiles);
 </template>
 
 <style lang="scss">
-.course__lessons-list{
+.firstcol.student__course{
+  height: auto;
+  padding-bottom: 15px;
+}
+.secondcol.student__course{
+  min-height: auto;
+  padding-bottom: 15px;
+}
+.course__lessons-list {
   display: flex !important;
   justify-content: flex-end;
   gap: 10px;
@@ -155,12 +152,12 @@ watch(lesson, clearFiles);
   margin-top: 30px;
   background-color: #fff;
   width: 1032px;
-  height: 308px;
   border-radius: 20px;
   &__text {
     text-align: center;
     font-size: 24px;
-    margin-top: 120px;
+    margin-top: 50px;
+    margin-bottom: 50px;
   }
 }
 .secondcol {

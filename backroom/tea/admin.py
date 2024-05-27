@@ -1,23 +1,14 @@
+# -*- coding: windows-1251 -*-
 from django.contrib import admin
-from tea.models import prepod, stud, faa, group, teoria
+from tea.models import faa, group, teoria, User, osenki
 
-
-# Register your models here.
+@admin.register(User)
+class UserAdmin(admin.ModelAdmin):
+    pass
 
 @admin.register(faa)
 class FaaAdmin(admin.ModelAdmin):
     pass
-
-
-@admin.register(prepod)
-class PredopAdmin(admin.ModelAdmin):
-    pass
-
-
-@admin.register(stud)
-class StudAdmin(admin.ModelAdmin):
-    pass
-
 
 @admin.register(group)
 class GroupAdmin(admin.ModelAdmin):
@@ -26,4 +17,9 @@ class GroupAdmin(admin.ModelAdmin):
 @admin.register(teoria)
 class TeoriaAdmin(admin.ModelAdmin):
     pass
+
+@admin.register(osenki)
+class OsenkiAdmin(admin.ModelAdmin):
+    pass
+
 

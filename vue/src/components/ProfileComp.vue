@@ -6,35 +6,34 @@ import axios from "axios";
 import { useRoute } from "vue-router";
 
 const router = useRoute();
-
+const group = ref("")
 const user = ref([]);
 
+const token = localStorage.getItem("token");
+
 const getData = async () => {
-  if (
-    router.path == `/profprofile/${router.params.userId}` ||
-    router.path == `/makecourse/${router.params.userId}` ||
-    router.path == `/table/${router.params.userId}`
-  ) {
-    try {
-      const { data } = await axios.get(`/api/Prepod/${router.params.userId}`);
-      user.value = data;
-    } catch (err) {
-      console.log(err);
-    }
-  }
-  if (
-    router.path == `/studprofile/${router.params.userId}` ||
-    router.path == `/courses/${router.params.userId}` ||
-    router.path == `/marks/${router.params.userId}`
-  ) {
-    try {
-      const { data } = await axios.get(`/api/Stud/${router.params.userId}`);
-      user.value = data;
-    } catch (err) {
-      console.log(err);
-    }
+  try {
+    const { data } = await axios.get(`/api/User/${router.params.userId}`, {
+      headers: {
+        Authorization: `Token ${token}`,
+      },
+    });
+    
+    user.value = data;
+  } catch (err) {
+    console.log(err);
+  } finally{
+    getGroup()
   }
 };
+const getGroup = async () => {
+  try{
+    const { data } = await axios.get(`/api/Gro/${user.value.fiGroup}`)
+    group.value = data.name
+  } catch(err){
+    console.log(err)
+  }
+}
 
 onMounted(() => {
   getData();
@@ -49,9 +48,14 @@ onMounted(() => {
         <div class="box">
           <img class="img" src="../assets/userpic.png" alt="" />
           <div class="info">
-            <p class="info__name">{{ user.name }}</p>
-            <p class="info__mail">Email: {{ user.mail }}</p>
-            <p v-if="$route.path == `/studprofile/${$route.params.userId}`" class="info__group">Группа: {{ user.group }}</p>
+            <p class="info__name">{{ user.first_name }}</p>
+            <p class="info__mail">Email: {{ user.email }}</p>
+            <p
+              v-if="$route.path == `/studprofile/${$route.params.userId}`"
+              class="info__group"
+            >
+              Группа: {{ group }}
+            </p>
             <p class="info__type">
               Тип:
               {{
@@ -67,7 +71,7 @@ onMounted(() => {
       </div>
       <div class="secondcol">
         <p class="text">
-          🚧🔨 <br>
+          🚧🔨 <br />
           Раздел находится в разработке
         </p>
       </div>
@@ -96,17 +100,17 @@ onMounted(() => {
   min-height: 308px;
   border-radius: 20px;
 }
-.box{
+.box {
   display: flex;
   gap: 20px;
   margin-left: 25px;
   margin-top: 54px;
 }
-.img{
+.img {
   width: 200px;
   height: 200px;
 }
-.info__name{
+.info__name {
   font-weight: 600;
   font-size: 24px;
   line-height: 36px;
@@ -114,15 +118,15 @@ onMounted(() => {
 }
 .info__mail,
 .info__type,
-.info__group{
+.info__group {
   font-size: 20px;
   line-height: 30px;
 }
 .info__mail,
-.info__group{
+.info__group {
   margin-bottom: 10px;
 }
-.text{
+.text {
   text-align: center;
   font-size: 30px;
   margin-top: 89px;

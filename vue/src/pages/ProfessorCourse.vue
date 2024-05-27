@@ -1,7 +1,9 @@
 <script setup>
-import { onMounted, ref } from "vue";
+import { onMounted, ref, watch } from "vue";
 import axios from "axios";
 import Sidebar from "../components/Sidebar.vue";
+import Faculties from "../components/Faculties.vue";
+import Groups from "../components/Groups.vue";
 const file = ref(null);
 const isUpload = ref(false);
 const isLecture = ref(false);
@@ -10,10 +12,78 @@ const error = ref("");
 const lesson = ref("");
 const topic = ref("");
 const group = ref();
+const fac = ref();
+const facs = ref();
+const groups = ref();
+const currentPage = ref(1);
+const perPage = ref(4);
+const displayedGroups = ref();
+const isGroupsLoad = ref(false);
+const facId = ref(0);
+const isPending = ref(false);
+const lessons = ref([
+  "Математический анализ",
+  "Дискретная математика",
+  "Аналитическая геометрия",
+  "Языки программирования",
+  "Линейная лгебра",
+  "Алгоритмы и структуры данных",
+  "История России",
+]);
+
+const clickPage = () => {
+  let startIndex = currentPage.value * perPage.value - perPage.value;
+  let endIndex = startIndex + perPage.value;
+  displayedGroups.value = groups.value.slice(startIndex, endIndex);
+};
 
 import { useRoute } from "vue-router";
 
+const token = localStorage.getItem("token");
 const router = useRoute();
+
+const getFacs = async () => {
+  try {
+    const { data } = await axios.get(`/api/Faa/`, {
+      headers: {
+        Authorization: `Token ${token}`,
+      },
+    });
+    facs.value = data;
+  } catch (err) {
+    console.log(err);
+  } finally {
+  }
+};
+
+const getGroups = async () => {
+  try {
+    const { data } = await axios.get(`/api/Faae/?name=${fac.value}`, {
+      headers: {
+        Authorization: `Token ${token}`,
+      },
+    });
+    facId.value = data[0].id;
+    isPending.value = true;
+  } catch (err) {
+    console.log(err);
+  } finally {
+    try {
+      const { data } = await axios.get(`/api/Groe/?faculty=${facId.value}`, {
+        headers: {
+          Authorization: `Token ${token}`,
+        },
+      });
+      groups.value = data;
+    } catch (err) {
+      console.log(err);
+    } finally {
+      isPending.value = false;
+      isGroupsLoad.value = true;
+      clickPage();
+    }
+  }
+};
 
 const postFile = async () => {
   let formData = new FormData();
@@ -22,20 +92,22 @@ const postFile = async () => {
   formData.append("predmet", lesson.value);
   formData.append("tema", topic.value);
   formData.append("group", group.value);
-  if(isLecture.value){
-    formData.append("type", 'Lecture');
+  if (isLecture.value) {
+    formData.append("type", "Lecture");
   }
-  if(isPractice.value){
-    formData.append("type", 'Practice');
+  if (isPractice.value) {
+    formData.append("type", "Practice");
   }
   await axios
     .post("/api/Teoria/", formData, {
       headers: {
         "Content-Type": "multipart/form-data",
+        Authorization: `Token ${token}`,
       },
     })
     .then(() => {
       onClickDelete();
+      alert("Файл отправлен!");
     })
     .catch((err) => {
       console.log(err);
@@ -43,12 +115,12 @@ const postFile = async () => {
 };
 
 const onClickDelete = () => {
-  file.value = null
-  isLecture.value = false
-  isPractice.value = false
-  isUpload.value = false
-  error.value = ''
-}
+  file.value = null;
+  isLecture.value = false;
+  isPractice.value = false;
+  isUpload.value = false;
+  error.value = "";
+};
 
 const onClickPost = () => {
   if (file.value == null) {
@@ -57,16 +129,18 @@ const onClickPost = () => {
   } else if (!isLecture.value && !isPractice.value) {
     error.value = "Вы не выбрали тип файла";
     return;
-  } else if (lesson.value == '') {
-    error.value = "Вы не ввели название курса";
+  } else if (lesson.value == "") {
+    error.value = "Вы не выбрали курс";
     return;
-  } else if (topic.value == '') {
+  } else if (topic.value == "") {
     error.value = "Вы не ввели название темы";
     return;
+  } else if (!fac.value) {
+    error.value = "Вы не выбрали факультет";
+    return;
   } else if (!group.value) {
-    error.value = "Вы не выбрали группу"
-    console.log(file.value)
-    return
+    error.value = "Вы не выбрали группу";
+    return;
   }
 
   error.value = "";
@@ -89,8 +163,16 @@ const onClickPractice = () => {
   isLecture.value = false;
 };
 const onClickGroup = (event) => {
-  group.value = event.target.value
-}
+  group.value = event.target.value;
+};
+const onClickFac = (event) => {
+  fac.value = event.target.value;
+};
+
+watch(fac, getGroups);
+onMounted(async () => {
+  getFacs();
+});
 </script>
 
 <template>
@@ -99,139 +181,39 @@ const onClickGroup = (event) => {
     <div class="course__inner">
       <div class="fac">
         <p class="fac__title title">Выберите факультет</p>
-        <ul class="fac__list">
-          <li class="fac__list-item">
-            <label>
-              <input
-                type="radio"
-                name="fac-course"
-                class="fac__item-radio--real"
-              />
-              <span class="fac__item-radio--custom"></span>
-              <p class="fac__item-text">
-                Институт компьютерных наук и технологий
-              </p>
-            </label>
-          </li>
-          <li class="fac__list-item">
-            <label>
-              <input
-                type="radio"
-                name="fac-course"
-                class="fac__item-radio--real"
-              />
-              <span class="fac__item-radio--custom"></span>
-              <p class="fac__item-text">Физико-Математический факультет</p>
-            </label>
-          </li>
+        <ul v-auto-animate class="fac__list">
+          <Faculties
+            v-for="fac in facs"
+            :on-click-fac="onClickFac"
+            :name="fac.name"
+          />
         </ul>
       </div>
       <div class="selectors">
-        <div class="selectors__course">
-          <p class="course__title title">Выберите курс</p>
-          <ul class="course__list">
-            <li class="course__list-item">
-              <label>
-                <input
-                  type="radio"
-                  name="makecourse"
-                  class="course__item-radio--real"
-                />
-                <span class="course__item-radio--custom"></span>
-                <p class="course__item-text">1 курс</p>
-              </label>
-            </li>
-            <li class="course__list-item">
-              <label>
-                <input
-                  type="radio"
-                  name="makecourse"
-                  class="course__item-radio--real"
-                />
-                <span class="course__item-radio--custom"></span>
-                <p class="course__item-text">2 курс</p>
-              </label>
-            </li>
-            <li class="course__list-item">
-              <label>
-                <input
-                  type="radio"
-                  name="makecourse"
-                  class="course__item-radio--real"
-                />
-                <span class="course__item-radio--custom"></span>
-                <p class="course__item-text">3 курс</p>
-              </label>
-            </li>
-            <li class="course__list-item">
-              <label>
-                <input
-                  type="radio"
-                  name="makecourse"
-                  class="course__item-radio--real"
-                />
-                <span class="course__item-radio--custom"></span>
-                <p class="course__item-text">4 курс</p>
-              </label>
-            </li>
+        <div v-auto-animate class="selectors__groups">
+          <p v-if="isGroupsLoad" class="groups__title title">Выберите группу</p>
+          <ul v-if="isGroupsLoad" class="groups__list">
+            <div v-auto-animate>
+              <Groups
+                v-for="item in displayedGroups"
+                :id="item.id"
+                :name="item.name"
+                :on-click-group="onClickGroup"
+              />
+            </div>
+            <vue-awesome-paginate
+              :total-items="isGroupsLoad ? groups.length : 0"
+              v-model="currentPage"
+              :items-per-page="perPage"
+              :max-pages-shown="6"
+              :on-click="clickPage"
+            />
           </ul>
-        </div>
-        <div class="selectors__groups">
-          <p class="groups__title title">Выберите группу</p>
-          <ul class="groups__list">
-            <li class="groups__list-item">
-              <label @click="onClickGroup" >
-                <input
-                  type="radio"
-                  name="group-course"
-                  class="groups__item-radio--real"
-                  value="ФИТ-12-23"
-                />
-                <span class="groups__item-radio--custom"></span>
-                <p class="groups__item-text">ФИТ-12-23</p>
-              </label>
-            </li>
-            <li class="groups__list-item">
-              <label @click="onClickGroup">
-                <input
-                  type="radio"
-                  name="group-course"
-                  class="groups__item-radio--real"
-                  value="ПМИ-12-23"
-                />
-                <span class="groups__item-radio--custom"></span>
-                <p class="groups__item-text">ПМИ-12-23</p>
-              </label>
-            </li>
-            <li class="groups__list-item">
-              <label @click="onClickGroup">
-                <input
-                  type="radio"
-                  name="group-course"
-                  class="groups__item-radio--real"
-                  value="ПМИ-34-23"
-                />
-                <span class="groups__item-radio--custom"></span>
-                <p class="groups__item-text">ПМИ-34-23</p>
-              </label>
-            </li>
-            <li class="groups__list-item">
-              <label @click="onClickGroup">
-                <input
-                  type="radio"
-                  name="group-course"
-                  class="groups__item-radio--real"
-                  value="ИТХ-12-23"
-                />
-                <span class="groups__item-radio--custom"></span>
-                <p class="groups__item-text">ИТХ-12-23</p>
-              </label>
-            </li>
-          </ul>
-          <div class="groups__paginate">
-            <a href="#" class="groups__page groups__page--active">1</a>
-            <a href="#" class="groups__page">2</a>
-            <a href="#" class="groups__page">3</a>
+          <div v-if="!isGroupsLoad && !isPending" class="groups__notfound">
+            <p class="groups__notfound-text">Ничего не найдено 😔</p>
+          </div>
+          <div v-if="isPending" class="groups__notfound">
+            <p class="groups__notfound-text">Загрузка 👀</p>
           </div>
         </div>
       </div>
@@ -295,12 +277,20 @@ const onClickGroup = (event) => {
         <div class="files__editor">
           <p class="editor__title title">Редактор задания</p>
           <div class="editor__form">
-            <input
+            <!-- <input
               placeholder="Название курса"
               type="text"
               class="editor__input"
               v-model="lesson"
-            />
+            /> -->
+            <select
+              v-model="lesson"
+              class="editor__selector"
+              name="lessonsCourse"
+            >
+              <option selected disabled value="2">Выберите курс</option>
+              <option v-for="item in lessons" :value="item">{{ item }}</option>
+            </select>
             <input
               placeholder="Тема"
               type="text"
@@ -331,7 +321,7 @@ const onClickGroup = (event) => {
                     stroke-linejoin="round"
                   />
                 </svg>
-                <p class="editor__file-name"> Лекция: {{ file.name }}</p>
+                <p class="editor__file-name">Лекция: {{ file.name }}</p>
                 <p @click="onClickDelete" class="editor__file-delete">
                   Удалить
                 </p>
@@ -359,7 +349,7 @@ const onClickGroup = (event) => {
                     stroke-linejoin="round"
                   />
                 </svg>
-                <p class="editor__file-name"> Практика: {{ file.name }}</p>
+                <p class="editor__file-name">Практика: {{ file.name }}</p>
                 <p @click="onClickDelete" class="editor__file-delete">
                   Удалить
                 </p>
@@ -374,8 +364,7 @@ const onClickGroup = (event) => {
   </div>
 </template>
 
-<style scoped lang="scss">
-
+<style lang="scss">
 .editor__error {
   color: rgb(236, 83, 83);
   text-align: center;
@@ -456,24 +445,13 @@ const onClickGroup = (event) => {
 }
 .selectors {
   margin-top: 20px;
-  display: flex;
-  &__course {
-    margin-left: 219px;
-    background-color: #fff;
-    border-radius: 12px;
-    padding-top: 12px;
-    padding-bottom: 12px;
-    padding-right: 25px;
-    margin-bottom: 20px;
-  }
+  margin-left: 219px;
   &__groups {
-    margin-left: auto;
     background-color: #fff;
     border-radius: 12px;
     padding-top: 12px;
     padding-bottom: 12px;
     margin-bottom: 20px;
-    width: 60%;
   }
 }
 .course__list {
@@ -522,6 +500,14 @@ const onClickGroup = (event) => {
   opacity: 0;
   position: absolute;
   z-index: -1;
+}
+.groups__notfound {
+  padding-top: 50px;
+  padding-bottom: 50px;
+  font-size: 24px;
+}
+.groups__notfound-text {
+  text-align: center;
 }
 .groups__list {
   list-style: none;
@@ -633,17 +619,43 @@ const onClickGroup = (event) => {
     margin-right: 24px;
     margin-bottom: 15px;
     font-family: "Poppins", sans-serif;
+    color: #000;
     font-weight: 400;
     font-style: normal;
     font-size: 20px;
     line-height: 30px;
     &::placeholder {
-      color: rgba(#000, 0.2);
-      font-size: 20px;
-      line-height: 30px;
       font-family: "Poppins", sans-serif;
+      color: rgba(#000, 0.2);
       font-weight: 400;
       font-style: normal;
+      font-size: 20px;
+      line-height: 30px;
+    }
+    &:focus {
+      outline: none;
+      border: 2px solid #02457a;
+      color: #000;
+    }
+  }
+  &__selector {
+    border: 2px solid rgba(#000, 0.2);
+    border-radius: 10px;
+    padding-top: 13px;
+    padding-bottom: 13px;
+    padding-left: 20px;
+    padding-right: 20px;
+    margin-right: 24px;
+    margin-bottom: 15px;
+    font-family: "Poppins", sans-serif;
+    color: #000;
+    font-weight: 400;
+    font-style: normal;
+    font-size: 20px;
+    line-height: 30px;
+    &:focus {
+      border: 2px solid #02457a;
+      color: #02457a;
     }
   }
   &__files {

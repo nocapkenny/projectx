@@ -11,6 +11,7 @@ import ProfessorTable from './pages/ProfessorTable.vue'
 import ProfessorCourse from './pages/ProfessorCourse.vue'
 import StudentCourse from './pages/StudentCourse.vue'
 import StudentMarks from './pages/StudentMarks.vue'
+import Login from './pages/Login.vue'
 
 
 import "vue-awesome-paginate/dist/style.css";
@@ -19,6 +20,7 @@ const app = createApp(App)
 
 const routes = [
   { path: '/', name: 'Registration', component: Registration },
+  { path: '/login', name: 'Login', component: Login },
   { path: '/studprofile/:userId', name: 'StudProfile', component: Profile },
   { path: '/profprofile/:userId', name: 'ProfProfile', component: Profile },
   { path: '/table/:userId', name: 'ProfessorTable', component: ProfessorTable },
